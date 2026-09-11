@@ -1,0 +1,60 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Java 23
+        uses: actions/setup-java@v3
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+
+      - name: Build core-api JAR
+        working-directory: ./core-api
+        run: mvn clean package -DskipTests
+
+      - name: Build ai-worker JAR
+        working-directory: ./ai-worker
+        run: mvn clean package -DskipTests
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push core-api image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        working-directory: ./core-api
+        run: |
+          docker build -t 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:$IMAGE_TAG .
+          docker push 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:$IMAGE_TAG
+          docker tag 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:$IMAGE_TAG 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:latest
+          docker push 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:latest
+
+      - name: Build and push ai-worker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        working-directory: ./ai-worker
+        run: |
+          docker build -t 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:$IMAGE_TAG .
+          docker push 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:$IMAGE_TAG
+          docker tag 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:$IMAGE_TAG 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:latest
+          docker push 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:latest
