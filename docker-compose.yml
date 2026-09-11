@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: MyUser
+      POSTGRES_PASSWORD: MyPassword
+      POSTGRES_DB: codereview
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name:  redis
+    ports:
+      - "6379:6379"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  core-api:
+    build:
+      context: ./core-api/core-api
+      dockerfile: Dockerfile
+    container_name: core-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/codereview
+      SPRING_DATASOURCE_USERNAME: MyUser
+      SPRING_DATASOURCE_PASSWORD: MyPassword
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_AI_GOOGLE_GENAI_API_KEY=: ${GEMINI_API_KEY}
+      JWT_SECRET: dGhpcyBpcyBhIHNlY3JldCBrZXkgZm9yIGpvYiB0cmFja2VyIGFwcGxpY2F0aW9u
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+
+  ai-worker:
+    build:
+      context: ./ai-worker/ai-worker
+      dockerfile: Dockerfile
+    container_name: ai-worker
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/codereview
+      SPRING_DATASOURCE_USERNAME: MyUser
+      SPRING_DATASOURCE_PASSWORD: MyPassword
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_AI_GOOGLE_GENAI_API_KEY=: ${GEMINI_API_KEY}
+    depends_on:
+      - postgres
+      - kafka
+volumes:
+  postgres_data:

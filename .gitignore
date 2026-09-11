@@ -1,0 +1,23 @@
+#IDE & Editor  files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Environment variables
+.env
+*.env
+
+# Build targets across all submodules (core-api, ai-worker)
+**/target/
+**/*.jar
+**/*.war
+**/bin/
+
+# Application Properties containing real secrets
+**/src/main/resources/application.properties
+**/src/main/resources/application-*.properties
+
+# Explicitly ALLOW placeholder files
+!**/src/main/resources/application.properties.example
+!**/src/main/resources/application-*.example
