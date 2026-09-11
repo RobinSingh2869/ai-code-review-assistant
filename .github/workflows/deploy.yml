@@ -19,11 +19,11 @@ jobs:
           distribution: 'temurin'
 
       - name: Build core-api JAR
-        working-directory: ./core-api
+        working-directory: ./core-api/core-api
         run: mvn clean package -DskipTests
 
       - name: Build ai-worker JAR
-        working-directory: ./ai-worker
+        working-directory: ./ai-worker/ai-worker
         run: mvn clean package -DskipTests
 
       - name: Configure AWS credentials
