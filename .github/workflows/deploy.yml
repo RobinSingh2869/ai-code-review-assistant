@@ -41,7 +41,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-        working-directory: ./core-api
+        working-directory: ./core-api/core-api
         run: |
           docker build -t 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:$IMAGE_TAG .
           docker push 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-core-api:$IMAGE_TAG
@@ -52,7 +52,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-        working-directory: ./ai-worker
+        working-directory: ./ai-worker/ai-worker
         run: |
           docker build -t 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:$IMAGE_TAG .
           docker push 135501091212.dkr.ecr.us-east-1.amazonaws.com/ai-code-review-ai-worker:$IMAGE_TAG
