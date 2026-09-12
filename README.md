@@ -24,7 +24,7 @@ Client polls GET /reviews/{id} until status = COMPLETED
 
 ## Tech Stack
 
-- **Language:** Java 23
+- **Language:** Java 25
 - **Framework:** Spring Boot 4.1
 - **AI Integration:** Spring AI (OpenAI)
 - **Security:** Spring Security + JWT
@@ -62,7 +62,7 @@ Client polls GET /reviews/{id} until status = COMPLETED
 ## How to Run Locally
 
 ### Prerequisites
-- Java 23
+- Java 25
 - Maven
 - Docker + Docker Compose
 
